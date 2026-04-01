@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guia de Prova — Análise de Dados em R</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;600;800&family=Nunito:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1c2330;
+    --border: #30363d;
+    --accent: #00d9a6;
+    --accent2: #4fa3ff;
+    --accent3: #ff7b54;
+    --text: #e6edf3;
+    --muted: #7d8590;
+    --code-bg: #0d1117;
+    --tag-a: #1a3a2e;
+    --tag-b: #1a2a3e;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Nunito', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+  /* ── HEADER ── */
+  .hero {
+    background: linear-gradient(135deg, #0d1117 0%, #0e1f14 50%, #0d1117 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 3rem 2rem 2.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(0,217,166,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-badge {
+    display: inline-block;
+    background: rgba(0,217,166,0.1);
+    border: 1px solid rgba(0,217,166,0.3);
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    padding: 0.3rem 0.9rem;
+    border-radius: 20px;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+  }
+  .hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(1.8rem, 5vw, 3rem);
+    color: var(--text);
+    line-height: 1.1;
+    margin-bottom: 0.6rem;
+  }
+  .hero h1 span { color: var(--accent); }
+  .hero p {
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+
+  /* ── LAYOUT ── */
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+
+  /* ── NAV TABS ── */
+  .nav-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    background: var(--surface);
+    padding: 0.5rem;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .tab-btn {
+    flex: 1;
+    min-width: 120px;
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--text); background: var(--surface2); }
+  .tab-btn.active {
+    background: var(--accent);
+    color: #000;
+  }
+  .tab-btn.active-b { background: var(--accent2); color: #000; }
+  .tab-btn.active-ref { background: var(--accent3); color: #000; }
+
+  /* ── PANELS ── */
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* ── ACTIVITY LABEL ── */
+  .activity-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'Syne', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 2px solid var(--border);
+    width: 100%;
+  }
+  .activity-label .dot {
+    width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0;
+  }
+  .dot-a { background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+  .dot-b { background: var(--accent2); box-shadow: 0 0 10px var(--accent2); }
+  .dot-ref { background: var(--accent3); box-shadow: 0 0 10px var(--accent3); }
+
+  /* ── STEPS ── */
+  .step {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 1.2rem;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .step:hover { border-color: var(--accent); }
+  .step-header {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 1rem 1.2rem;
+    cursor: pointer;
+    user-select: none;
+  }
+  .step-num {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background: rgba(0,217,166,0.12);
+    border: 1px solid rgba(0,217,166,0.25);
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .step-num-b {
+    background: rgba(79,163,255,0.12);
+    border-color: rgba(79,163,255,0.25);
+    color: var(--accent2);
+  }
+  .step-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+    font-size: 0.95rem;
+    flex: 1;
+  }
+  .step-arrow {
+    color: var(--muted);
+    font-size: 1rem;
+    transition: transform 0.25s;
+  }
+  .step.open .step-arrow { transform: rotate(90deg); }
+
+  .step-body {
+    display: none;
+    padding: 0 1.2rem 1.2rem;
+    border-top: 1px solid var(--border);
+  }
+  .step.open .step-body { display: block; }
+
+  /* ── CODE BLOCKS ── */
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.2rem;
+    margin: 0.8rem 0;
+    overflow-x: auto;
+    position: relative;
+  }
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    color: #a5d6a7;
+    line-height: 1.6;
+  }
+  .copy-btn {
+    position: absolute;
+    top: 0.5rem; right: 0.5rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    padding: 0.2rem 0.55rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .copy-btn:hover { color: var(--text); border-color: var(--accent); }
+  .copy-btn.copied { color: var(--accent); border-color: var(--accent); }
+
+  /* ── NOTES / ALERTS ── */
+  .note {
+    background: rgba(0,217,166,0.06);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    padding: 0.8rem 1rem;
+    margin: 0.8rem 0;
+    font-size: 0.9rem;
+  }
+  .note-b {
+    background: rgba(79,163,255,0.06);
+    border-color: var(--accent2);
+  }
+  .note-warn {
+    background: rgba(255,123,84,0.06);
+    border-color: var(--accent3);
+  }
+  .note strong { display: block; margin-bottom: 0.3rem; font-size: 0.8rem; letter-spacing: 0.05em; text-transform: uppercase; }
+  .note ul { padding-left: 1.2rem; margin-top: 0.3rem; }
+  .note li { margin-bottom: 0.2rem; }
+
+  /* ── TABLE ── */
+  .table-wrap { overflow-x: auto; margin: 0.8rem 0; border-radius: 8px; border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th {
+    background: var(--surface2);
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    padding: 0.7rem 1rem;
+    text-align: left;
+    white-space: nowrap;
+  }
+  td { padding: 0.6rem 1rem; border-top: 1px solid var(--border); vertical-align: top; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  .tag-a-pill { background: var(--tag-a); color: var(--accent); border-radius: 4px; padding: 0.1rem 0.4rem; font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; }
+  .tag-b-pill { background: var(--tag-b); color: var(--accent2); border-radius: 4px; padding: 0.1rem 0.4rem; font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; }
+
+  /* ── QUICK REF GRID ── */
+  .ref-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+  .ref-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem;
+  }
+  .ref-card h4 {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent3);
+    margin-bottom: 0.6rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .ref-card pre { margin: 0; }
+
+  /* ── INLINE CODE ── */
+  p code, li code, td code {
+    background: rgba(255,255,255,0.07);
+    color: var(--accent2);
+    padding: 0.1rem 0.35rem;
+    border-radius: 4px;
+    font-size: 0.82rem;
+  }
+
+  p { margin: 0.5rem 0; }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-badge">📊 Inteligência Artificial — Análise de Dados</div>
+  <h1>Guia de Prova <span>em R</span></h1>
+  <p>Análise Exploratória · Regressão Linear · Referência Rápida</p>
+</div>
+
+<div class="container">
+
+  <!-- TABS -->
+  <div class="nav-tabs">
+    <button class="tab-btn active" onclick="switchTab('a', this)">📦 Atividade A — diamonds</button>
+    <button class="tab-btn" onclick="switchTab('b', this)">🚗 Atividade B — auto.csv</button>
+    <button class="tab-btn" onclick="switchTab('ref', this)">⚡ Referência Rápida</button>
+  </div>
+
+  <!-- ══════════ PANEL A ══════════ -->
+  <div id="panel-a" class="panel active">
+    <div class="activity-label">
+      <span class="dot dot-a"></span>
+      Análise Exploratória — dataset <code>diamonds</code> (ggplot2)
+    </div>
+
+    <!-- Passo 1 -->
+    <div class="step open">
+      <div class="step-header" onclick="toggleStep(this)">
+        <span class="step-num">01</span>
+        <span class="step-title">Instalar e carregar bibliotecas</span>
+        <span class="step-arrow">▶</span>
+      </div>
+      <div class="step-body">
+        <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code>install.packages("ggplot2")
+install.packages("knitr")
+install.packages("dplyr")
+
+library(ggplot2)
+library(knitr)
+library(dplyr)</code></pre>
+      </div>
+    </div>
+
+    <!-- Passo 2 -->
+    <div class="step">
+      <div class="step-header" onclick="toggleStep(this)">
+        <span class="step-num">02</span>
+        <span class="step-title">Verificar características do dataset</span>
+        <span class="step-arrow">▶</span>
+      </div>
+      <div class="step-body">
+        <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code>dim(diamonds)       # dimensões: 53940 linhas x 10 colunas
+str(diamonds)       # tipos de variáveis e primeiros valores
+summary(diamonds)   # resumo estatístico completo</code></pre>
+        <div class="note">
+          <strong>💬 O que discutir</strong>
+          <ul>
+            <li>O dataset possui <strong>53.940 observações e 10 variáveis</strong></li>
+            <li>Variáveis numéricas: <code>price</code>, <code>carat</code>, <code>depth</code>, <code>table</code>, <code>x</code>, <code>y</code>, <code>z</code></li>
+            <li>Variáveis categóricas (fatores ordenados): <code>cut</code>, <code>color</code>, <code>clarity</code></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Passo 3 -->
+    <div class="step">
+      <div class="step-header" onclick="toggleStep(this)">
+        <span class="step-num">03</span>
+        <span class="step-title">Verificar parte inicial e final</span>
+        <span class="step-arrow">▶</span>
+      </div>
+      <div class="step-body">
+        <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code>head(diamonds)      # primeiras 6 linhas
+tail(diamonds)      # últimas 6 linhas
+head(diamonds, 10)  # primeiras 10 linhas</code></pre>
+      </div>
+    </div>
+
+    <!-- Passo 4 -->
+    <div class="step">
+      <div class="step-header" onclick="toggleStep(this)">
+        <span class="step-num">04</span>
+        <span class="step-title">Variáveis: descrição e intervalo numérico</span>
+        <span class="step-arrow">▶</span>
+      </div>
+      <div class="step-body">
+        <div class="table-wrap">
+          <table>
+            <tr><th>Variável</th><th>Descrição</th><th>Tipo</th><th>Intervalo / Valores</th></tr>
+            <tr><td><code>carat</code></td><td>Peso em quilates</td><td>Numérico</td><td>0.20 – 5.01</td></tr>
+            <tr><td><code>cut</code></td><td>Qualidade do corte</td><td>Fator ord.</td><td>Fair &lt; Good &lt; Very Good &lt; Premium &lt; Ideal</td></tr>
+            <tr><td><code>color</code></td><td>Cor do diamante</td><td>Fator ord.</td><td>D (melhor) → J (pior)</td></tr>
+            <tr><td><code>clarity</code></td><td>Pureza / clareza</td><td>Fator ord.</td><td>I1 (pior) … IF (melhor)</td></tr>
+            <tr><td><code>depth</code></td><td>Profundidade total (%)</td><td>Numérico</td><td>43.0 – 79.0</td></tr>
+            <tr><td><code>table</code></td><td>Largura do topo relativa</td><td>Numérico</td><td>43.0 – 95.0</td></tr>
+            <tr><td><code>price</code></td><td>Preço (USD)</td><td>Inteiro</td><td>$326 – $18.823</td></tr>
+            <tr><td><code>x</code></td><td>Comprimento (mm)</td><td>Numérico</td><td>0 – 10.74</td></tr>
+            <tr><td><code>y</code></td><td>Largura (mm)</td><td>Numérico</td><td>0 – 58.9</td></tr>
+            <tr><td><code>z</code></td><td>Profundidade (mm)</td><td>Numérico</td><td>0 – 31.8</td></tr>
+          </table>
+        </div>
+        <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code># Verificar intervalo de qualquer variável
+range(diamonds$price)
+range(diamonds$carat)
+levels(diamonds$cut)
+levels(diamonds$color)</code></pre>
+      </div>
+    </div>
+
+    <!-- Passo 5 -->
+    <div class="step">
+      <div class="step-header" onclick="toggleStep(this)">
+        <span class="step-num">05</span>
+        <span class="step-title">Explorar uma variável individualmente</span>
+        <span class="step-arrow">▶</span>
+      </div>
+      <div class="step-body">
+        <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code># Exemplo: explorando a variável price
+summary(diamonds$price)
+mean(diamonds$price)
+median(diamonds$price)
+sd(diamonds$price)
+
+# Para variável categórica (ex: cut)
+table(diamonds$cut)
+prop.table(table(diamonds$cut))  # em proporção</code></pre>
+      </div>
+    </div>
+
+    <!-- Passo 6 -->
+    <div class="step">
+      <div class="step-header" onclick="toggleStep(this)">
+        <span class="step-num">06</span>
+        <span class="step-title">Histograma e Boxplot das variáveis</span>
+        <span class="step-arrow">▶</span>
+      </div>
+      <div class="step-body">
+        <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code># ── HISTOGRAMAS ──────────────────────────────────────
+ggplot(diamonds, aes(x = price)) +
+  geom_histogram(binwidth = 500, fill = "steelblue", color = "white") +
+  labs(title = "Distribuição de Preços", x = "Preço (USD)", y = "Frequência")
+
+ggplot(diamonds, aes(x = carat)) +
+  geom_histogram(binwidth = 0.1, fill = "coral", color = "white") +
+  labs(title = "Distribuição de Quilates", x = "Quilates", y = "Frequência")
+
+# ── BOXPLOTS ─────────────────────────────────────────
+ggplot(diamonds, aes(y = price)) +
+  geom_boxplot(fill = "lightblue") +
+  labs(title = "Boxplot de Preços")
+
+ggplot(diamonds, aes(y = depth)) +
+  geom_boxplot(fill = "lightgreen") +
+  labs(title = "Boxplot de Profundidade")</code></pre>
+      </div>
+    </div>
+
+    <!-- Passo 7 -->
+    <div class="step">
+      <div class="step-header" onclick="toggleStep(this)">
+        <span class="step-num">07</span>
+        <span class="step-title">color × table — Boxplot variado</span>
+        <span class="step-arrow">▶</span>
+      </div>
+      <div class="step-body">
+        <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code># Boxplot: cor vs largura do topo
+ggplot(diamonds, aes(x = color, y = table, fill = color)) +
+  geom_boxplot() +
+  labs(title = "Largura do Topo por Cor do Diamante",
+       x = "Cor", y = "Largura do Topo (table)") +
+  theme_minimal()
+
+# Versão violino (mais detalhada)
+ggplot(diamonds, aes(x = color, y = table, fill = color)) +
+  geom_violin() +
+  labs(title = "Distribuição da Largura do Topo por Cor") +
+  theme_minimal()</code></pre>
+        <div class="note">
+          <strong>💬 O que relatar</strong>
+          <ul>
+            <li>A distribuição da largura do topo (<code>table</code>) é bastante <strong>similar entre as cores</strong></li>
+            <li>Os medianos são próximos, indicando que a cor do diamante <strong>não influencia significativamente</strong> a largura do topo</li>
+            <li>Há outliers presentes em todas as cores, especialmente nas extremidades</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Passo 8 -->
+    <div class="step">
+      <div class="step-header" onclick="toggleStep(this)">
+        <span class="step-num">08</span>
+        <span class="step-title">cut × price — Boxplot variado</span>
+        <span class="step-arrow">▶</span>
+      </div>
+      <div class="step-body">
+        <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code># Boxplot: tipo de corte vs preço
+ggplot(diamonds, aes(x = cut, y = price, fill = cut)) +
+  geom_boxplot() +
+  labs(title = "Preço por Tipo de Corte",
+       x = "Corte", y = "Preço (USD)") +
+  theme_minimal()
+
+# Com escala logarítmica (melhor com outliers)
+ggplot(diamonds, aes(x = cut, y = price, fill = cut)) +
+  geom_boxplot() +
+  scale_y_log10() +
+  labs(title = "Preço por Tipo de Corte (escala log)") +
+  theme_minimal()
+
+# Notched boxplot (intervalo de confiança da mediana)
+ggplot(diamonds, aes(x = cut, y = price, fill = cut)) +
+  geom_boxplot(notch = TRUE) +
+  labs(title = "Preço por Tipo de Corte (com entalhe)")</code></pre>
+        <div class="note note-warn">
+          <strong>⚠️ Resultado contraintuitivo — cite na prova!</strong>
+          <ul>
+            <li>Diamantes com corte <strong>"Fair" (pior corte) têm preço mediano mais alto</strong> do que "Ideal"</li>
+            <li>Isso ocorre porque o <strong>quilate (carat)</strong> é o principal fator de preço — diamantes de corte inferior costumam ser maiores</li>
+            <li>Corte e preço têm relação <strong>confundida</strong> pela variável <code>carat</code></li>
+            <li>Grande dispersão e muitos outliers em todos os tipos de corte</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div><!-- /panel-a -->
+
+
+  <!-- ══════════ PANEL B ══════════ -->
+  <div id="panel-b" class="panel">
+    <div class="activity-label">
+      <span class="dot dot-b"></span>
+      Regressão Linear — dataset <code>auto.csv</code>
+    </div>
+
+    <!-- Dicionário -->
+    <div class="step">
+      <div class="step-header" onclick="toggleStep(this)">
+        <span class="step-num step-num-b">00</span>
+        <span class="step-title">Dicionário de dados — auto.csv</span>
+        <span class="step-arrow">▶</span>
+      </div>
+      <div class="step-body">
+        <div class="table-wrap">
+          <table>
+            <tr><th>Variável</th><th>Descrição</th><th>Tipo</th><th>Mensuração</th><th>Intervalo</th></tr>
+            <tr><td><code>cylinders</code></td><td>Número de cilindros</td><td>Inteiro</td><td>Discreta</td><td>3 – 8</td></tr>
+            <tr><td><code>displacement</code></td><td>Cilindrada do motor (cm³)</td><td>Numérico</td><td>Contínua</td><td>68 – 455</td></tr>
+            <tr><td><code>horsepower</code></td><td>Potência (HP)</td><td>Numérico</td><td>Contínua</td><td>46 – 230</td></tr>
+            <tr><td><code>weight</code></td><td>Peso do veículo (libras)</td><td>Numérico</td><td>Contínua</td><td>~1600 – 5140</td></tr>
+            <tr><td><code>acceleration</code></td><td>Tempo 0–60 mph (s)</td><td>Numérico</td><td>Contínua</td><td>~8 – 25</td></tr>
+            <tr><td><code>model_year</code></td><td>Ano do modelo</td><td>Inteiro</td><td>Discreta</td><td>70 – 82 (=1970–82)</td></tr>
+            <tr><td><code>origin</code></td><td>Origem do fabricante</td><td>Inteiro</td><td>Nominal</td><td>1=EUA, 2=Europa, 3=Japão</td></tr>
+            <tr><td><code>mpg</code></td><td>Milhas por galão (eficiência)</td><td>Numérico</td><td>Contínua</td><td>9 – 46.6</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Passo 1 -->
+    <div class="step">
+      <div class="step-header" onclick="toggleStep(this)">
+        <span class="step-num step-num-b">01</span>
+        <span class="step-title">Instalar pacote e carregar dados</span>
+        <span class="step-arrow">▶</span>
+      </div>
+      <div class="step-body">
+        <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code>install.packages("ggpubr")
+library(ggplot2)
+library(ggpubr)
+
+# Carregar o CSV
+auto <- read.csv("auto.csv")
+
+# Verificar se carregou corretamente
+str(auto)
+summary(auto)
+head(auto)</code></pre>
+      </div>
+    </div>
+
+    <!-- Passo 2 -->
+    <div class="step">
+      <div class="step-header" onclick="toggleStep(this)">
+        <span class="step-num step-num-b">02</span>
+        <span class="step-title">Gráfico de dispersão — dados da tabela manual</span>
+        <span class="step-arrow">▶</span>
+      </div>
+      <div class="step-body">
+        <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code># Criar o dataframe com os dados da tabela
+horas <- c(5.2, 5.1, 4.9, 4.6, 4.7, 4.8, 4.6, 4.9)
+tempo <- c(13, 15, 16, 20, 19, 17, 21, 16)
+df_treino <- data.frame(horas = horas, tempo = tempo)
+
+# Gráfico de dispersão simples
+ggplot(df_treino, aes(x = horas, y = tempo)) +
+  geom_point(size = 3, color = "steelblue") +
+  labs(title = "Horas de Treinamento vs Tempo",
+       x = "Horas de Treinamento", y = "Tempo para completar") +
+  theme_minimal()
+
+# Com reta de regressão
+ggplot(df_treino, aes(x = horas, y = tempo)) +
+  geom_point(size = 3, color = "steelblue") +
+  geom_smooth(method = "lm", se = TRUE, color = "red") +
+  labs(title = "Regressão Linear: Horas vs Tempo") +
+  theme_minimal()</code></pre>
+      </div>
+    </div>
+
+    <!-- Passo 3 -->
+    <div class="step">
+      <div class="step-header" onclick="toggleStep(this)">
+        <span class="step-num step-num-b">03</span>
+        <span class="step-title">Ajustar e interpretar o modelo de regressão</span>
+        <span class="step-arrow">▶</span>
+      </div>
+      <div class="step-body">
+        <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code># Ajustar o modelo linear (y = tempo, x = horas)
+modelo1 <- lm(tempo ~ horas, data = df_treino)
+summary(modelo1)
+coef(modelo1)   # mostra intercepto (β0) e inclinação (β1)</code></pre>
+        <div class="note note-b">
+          <strong>📖 Como ler o output do summary()</strong>
+          <ul>
+            <li><strong>(Intercept)</strong> → β0: valor de y quando x = 0</li>
+            <li><strong>horas (coeficiente)</strong> → β1: variação em y para cada +1 em x</li>
+            <li><strong>R-squared</strong> → quanto o modelo explica da variação (0 a 1; quanto mais perto de 1, melhor)</li>
+            <li><strong>p-value &lt; 0.05</strong> → relação estatisticamente significativa</li>
+            <li><strong>Equação da reta:</strong> <code>tempo = β0 + β1 × horas</code></li>
+          </ul>
+        </div>
+        <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code># Gráfico com equação e correlação (pacote ggpubr)
+ggscatter(df_treino, x = "horas", y = "tempo",
+          add = "reg.line",
+          add.params = list(color = "red"),
+          conf.int = TRUE) +
+  stat_cor(label.x = 4.8) +
+  stat_regline_equation(label.x = 4.8, label.y = 21)</code></pre>
+      </div>
+    </div>
+
+    <!-- Passo 4 -->
+    <div class="step">
+      <div class="step-header" onclick="toggleStep(this)">
+        <span class="step-num step-num-b">04</span>
+        <span class="step-title">Análise / diagnóstico do modelo</span>
+        <span class="step-arrow">▶</span>
+      </div>
+      <div class="step-body">
+        <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code># 4 gráficos de diagnóstico de uma vez
+par(mfrow = c(2,2))
+plot(modelo1)
+par(mfrow = c(1,1))  # resetar</code></pre>
+        <div class="note note-b">
+          <strong>📖 O que analisar nos gráficos de diagnóstico</strong>
+          <ul>
+            <li><strong>Residuals vs Fitted:</strong> pontos aleatórios sem padrão = bom modelo</li>
+            <li><strong>Q-Q Plot:</strong> pontos próximos da diagonal = resíduos normais = bom sinal</li>
+            <li><strong>Scale-Location:</strong> homogeneidade da variância (linha horizontal = bom)</li>
+            <li><strong>Cook's Distance:</strong> pontos influentes que podem distorcer o modelo</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Passo 5 -->
+    <div class="step">
+      <div class="step-header" onclick="toggleStep(this)">
+        <span class="step-num step-num-b">05</span>
+        <span class="step-title">Explorar e resumir a base auto.csv</span>
+        <span class="step-arrow">▶</span>
+      </div>
+      <div class="step-body">
+        <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code>dim(auto)              # 392 linhas, 8 colunas
+str(auto)              # tipos de variáveis
+summary(auto)          # resumo estatístico
+colSums(is.na(auto))   # verificar valores ausentes
+head(auto)</code></pre>
+      </div>
+    </div>
+
+    <!-- Passo 6 -->
+    <div class="step">
+      <div class="step-header" onclick="toggleStep(this)">
+        <span class="step-num step-num-b">06</span>
+        <span class="step-title">Regressão: horsepower → mpg</span>
+        <span class="step-arrow">▶</span>
+      </div>
+      <div class="step-body">
+        <div class="note note-b">
+          <strong>💡 a) Intuição antes do código</strong>
+          <ul>
+            <li>Carros mais potentes tendem a consumir mais combustível</li>
+            <li>Logo, espera-se uma relação <strong>negativa</strong>: mais HP → menos MPG</li>
+          </ul>
+        </div>
+        <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code># Dispersão primeiro
+ggplot(auto, aes(x = horsepower, y = mpg)) +
+  geom_point(alpha = 0.5, color = "steelblue") +
+  labs(title = "Potência vs Eficiência (MPG)",
+       x = "Potência (HP)", y = "Milhas por Galão") +
+  theme_minimal()
+
+# b) Ajustar o modelo
+modelo_auto <- lm(mpg ~ horsepower, data = auto)
+summary(modelo_auto)
+
+# Gráfico com reta
+ggplot(auto, aes(x = horsepower, y = mpg)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "lm", color = "red", se = TRUE) +
+  labs(title = "Regressão: Potência → MPG") +
+  theme_minimal()</code></pre>
+        <div class="note note-warn">
+          <strong>📊 Resultado esperado (b)</strong>
+          <ul>
+            <li>Coeficiente de <code>horsepower</code> será <strong>negativo</strong> (confirma intuição)</li>
+            <li>R² em torno de <strong>0.60</strong> → potência sozinha explica ~60% da variação do mpg</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Passo 7 -->
+    <div class="step">
+      <div class="step-header" onclick="toggleStep(this)">
+        <span class="step-num step-num-b">07</span>
+        <span class="step-title">Apenas a potência é suficiente? Modelo múltiplo</span>
+        <span class="step-arrow">▶</span>
+      </div>
+      <div class="step-body">
+        <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code># Modelo com múltiplas variáveis
+modelo_multi <- lm(mpg ~ horsepower + weight + cylinders + displacement,
+                   data = auto)
+summary(modelo_multi)
+
+# Comparar R² dos dois modelos
+cat("R² simples (só HP):", summary(modelo_auto)$r.squared, "\n")
+cat("R² múltiplo:       ", summary(modelo_multi)$r.squared, "\n")</code></pre>
+        <div class="note note-b">
+          <strong>💬 Conclusão esperada</strong>
+          <ul>
+            <li>Apenas <code>horsepower</code> <strong>NÃO é suficiente</strong> — R² ~0.60 é moderado</li>
+            <li>O modelo múltiplo eleva R² para ~0.70+</li>
+            <li>Para boa previsão, precisamos de mais variáveis como <code>weight</code> e <code>cylinders</code></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div><!-- /panel-b -->
+
+
+  <!-- ══════════ PANEL REF ══════════ -->
+  <div id="panel-ref" class="panel">
+    <div class="activity-label">
+      <span class="dot dot-ref"></span>
+      Referência Rápida — Comandos Essenciais
+    </div>
+
+    <div class="ref-grid">
+      <div class="ref-card">
+        <h4>📐 Estrutura do dado</h4>
+        <pre><code>dim(df)
+str(df)
+summary(df)
+head(df)
+tail(df)
+colSums(is.na(df))</code></pre>
+      </div>
+
+      <div class="ref-card">
+        <h4>📊 Estatísticas</h4>
+        <pre><code>mean(df$var)
+median(df$var)
+sd(df$var)
+range(df$var)
+table(df$var)
+prop.table(table(df$var))</code></pre>
+      </div>
+
+      <div class="ref-card">
+        <h4>📈 Regressão</h4>
+        <pre><code>modelo <- lm(y ~ x, data=df)
+summary(modelo)
+coef(modelo)
+par(mfrow=c(2,2))
+plot(modelo)
+par(mfrow=c(1,1))</code></pre>
+      </div>
+
+      <div class="ref-card">
+        <h4>🔵 Dispersão</h4>
+        <pre><code>ggplot(df, aes(x=X, y=Y)) +
+  geom_point() +
+  geom_smooth(method="lm")</code></pre>
+      </div>
+
+      <div class="ref-card">
+        <h4>📊 Histograma</h4>
+        <pre><code>ggplot(df, aes(x=var)) +
+  geom_histogram(
+    binwidth=500,
+    fill="steelblue",
+    color="white"
+  )</code></pre>
+      </div>
+
+      <div class="ref-card">
+        <h4>📦 Boxplot por grupo</h4>
+        <pre><code>ggplot(df, aes(
+    x=grupo,
+    y=var,
+    fill=grupo)) +
+  geom_boxplot() +
+  theme_minimal()</code></pre>
+      </div>
+
+      <div class="ref-card">
+        <h4>🎻 Violino</h4>
+        <pre><code>ggplot(df, aes(
+    x=grupo,
+    y=var,
+    fill=grupo)) +
+  geom_violin() +
+  theme_minimal()</code></pre>
+      </div>
+
+      <div class="ref-card">
+        <h4>🔬 ggpubr — com equação</h4>
+        <pre><code>ggscatter(df,
+  x="X", y="Y",
+  add="reg.line",
+  conf.int=TRUE) +
+stat_cor() +
+stat_regline_equation()</code></pre>
+      </div>
+
+      <div class="ref-card">
+        <h4>📏 Níveis de fatores</h4>
+        <pre><code>levels(diamonds$cut)
+levels(diamonds$color)
+levels(diamonds$clarity)</code></pre>
+      </div>
+    </div>
+
+    <div style="margin-top:1.5rem;">
+      <div class="note note-warn">
+        <strong>🎯 Pontos chave para a prova</strong>
+        <ul>
+          <li><strong>R²:</strong> quanto mais perto de 1, melhor o modelo explica os dados</li>
+          <li><strong>p-value &lt; 0.05:</strong> relação estatisticamente significativa</li>
+          <li><strong>Coeficiente negativo:</strong> relação inversa entre as variáveis</li>
+          <li><strong>Resultado contraintuitivo diamonds:</strong> corte "Fair" tem preço mediano mais alto do que "Ideal" por causa do quilate (carat)</li>
+          <li><strong>Modelo simples vs múltiplo:</strong> mais variáveis → maior R², mas cuidado com sobreajuste</li>
+        </ul>
+      </div>
+    </div>
+  </div><!-- /panel-ref -->
+
+</div><!-- /container -->
+
+<script>
+  function switchTab(id, btn) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active', 'active-b', 'active-ref'));
+    document.getElementById('panel-' + id).classList.add('active');
+    if (id === 'a') btn.classList.add('active');
+    else if (id === 'b') btn.classList.add('active-b');
+    else btn.classList.add('active-ref');
+  }
+
+  function toggleStep(header) {
+    const step = header.parentElement;
+    step.classList.toggle('open');
+  }
+
+  function copyCode(btn) {
+    const code = btn.nextSibling.textContent;
+    navigator.clipboard.writeText(code).then(() => {
+      btn.textContent = '✓ copiado';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'copiar'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  // Abrir primeiro passo de cada painel por padrão
+  document.querySelectorAll('.panel').forEach(panel => {
+    const first = panel.querySelector('.step');
+    if (first) first.classList.add('open');
+  });
+</script>
+</body>
+</html>
